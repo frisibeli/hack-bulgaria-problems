@@ -1,2 +1,2 @@
-# hack-bulgaria-problems
+# Hack Bulgaria problems
 Solutions to HackBulgaria's application tasks.
