@@ -1,23 +1,13 @@
-import java.io.BufferedReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
+import java.io.*;
+import java.net.*;
+import java.text.*;
+import java.util.*;
 
 interface MyLogger{
-	String log(int level, String message);
+	void log(int level, String message);
 }
 class ConsoleLogger implements MyLogger{
-	public String log(int level, String message){
+	public void log(int level, String message){
 		TimeZone tz = TimeZone.getTimeZone("GMT+2");
 	    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	    df.setTimeZone(tz);
@@ -36,11 +26,11 @@ class ConsoleLogger implements MyLogger{
 			break;
 		}
 	    loggedMsg += "::"+df.format(new Date());
-		return loggedMsg+"::"+message;
+		System.out.println( loggedMsg+"::"+message);
 	}
 }
 class FileLogger implements MyLogger{
-	public String log(int level, String message){
+	public void log(int level, String message){
 		TimeZone tz = TimeZone.getTimeZone("GMT+2");
 	    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	    df.setTimeZone(tz);
@@ -65,16 +55,16 @@ class FileLogger implements MyLogger{
 	        FileWriter fw = new FileWriter(filename,true);
 	        fw.write(loggedMsg+'\n');
 	        fw.close();
+	        System.out.println("Successfully logged into file.");
 	    }
 	    catch(IOException ioe)
 	    {
 	        System.err.println("IOException: " + ioe.getMessage());
 	    }
-		return loggedMsg;
 	}
 }
 class HTTPLogger implements MyLogger{
-	public String log(int level, String message){
+	public void log(int level, String message){
 		TimeZone tz = TimeZone.getTimeZone("GMT+2");
 	    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 	    df.setTimeZone(tz);
@@ -102,7 +92,6 @@ class HTTPLogger implements MyLogger{
 			e.printStackTrace();
 		}
 
-		return loggedMsg;
 	}
 	public void sendPost(String params, String url) throws MalformedURLException, IOException{
 		String charset = java.nio.charset.StandardCharsets.UTF_8.name();
@@ -112,8 +101,9 @@ class HTTPLogger implements MyLogger{
 		connection.setDoOutput(true); // POST.
 		connection.setRequestProperty("Accept-Charset", charset);
 		connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=" + charset);
-
+		System.out.println("POST sent!");
 		try (OutputStream output = connection.getOutputStream()) {
+			System.out.println("HTTP response:");
 		    output.write(query.getBytes(charset));
 		}
 
@@ -138,7 +128,8 @@ public class Main {
 		ConsoleLogger loggerConsole = new ConsoleLogger();
 		FileLogger loggerFile = new FileLogger();
 		HTTPLogger loggerHTTP = new HTTPLogger();
-		System.out.println(loggerConsole.log(1, "Just-log-that-message"));
+		
+		loggerConsole.log(1, "Just-log-that-message");
 		loggerHTTP.log(1, "Send Post");
 		loggerFile.log(2, "write that log down");
 		
