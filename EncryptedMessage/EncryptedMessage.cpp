@@ -12,9 +12,11 @@ private:
 	string encryptedMessage_;
 	int alphabetSize_;
 	int keySize_;
+	int messageSize_;
 
 	void parseMessage();
 	string swapParts(string);
+	int* getAlphabetIndexes(string);
 public:
 	Cypher(string);
 	~Cypher();
@@ -31,36 +33,60 @@ string Cypher::swapParts(string str){
 	return part2 + part1;
 }
 
+int* Cypher::getAlphabetIndexes(string word){
+	int* indexes = new int[word.length()];
+	for (int i = 0; i < word.length(); i++)
+	{
+		indexes[i] = alphabet_.find(word[i]);
+	}
+	return indexes;
+}
+
 void Cypher::parseMessage(){
 	vector<string> parts;
 	int lastPart = 0;
 	int part = 0;
 	for (int i = 0; i < swappedMessage_.length(); i++)
 	{
-		if (swappedMessage_[i] == '~' || i == swappedMessage_.length()-1){
-			parts.push_back(swappedMessage_.substr(lastPart, i-part));
-			part+=3;
-			lastPart = i+1;
+		if (swappedMessage_[i] == '~' || i == swappedMessage_.length() - 1){
+			parts.push_back(swappedMessage_.substr(lastPart, i - part));
+			part += 3;
+			lastPart = i + 1;
 		}
 	}
 	alphabetSize_ = stoi(parts[0]);
 	keySize_ = stoi(parts[2]);
 	alphabet_ = parts[1].substr(0, alphabetSize_);
-	encryptedMessage_ = parts[1].substr(alphabetSize_, parts[1].length() - keySize_);
+	messageSize_ = parts[1].length() - keySize_;
+	encryptedMessage_ = parts[1].substr(alphabetSize_, messageSize_);
 	key_ = parts[1].substr(parts[1].length() - keySize_);
 }
 
 string Cypher::decryptMessage(){
-	string realMessage = "";
 	swappedMessage_ = swapParts(originalMessage_);
 	parseMessage();
+
+	string realMessage = "", keyString = "";
+	int *inputArray, *keyArray, *outputArray = new int[encryptedMessage_.length()];
+
+	for (int i = 0; i < (encryptedMessage_.length() / keySize_ + keySize_); i++)
+	{
+		keyString += key_;
+	}
+	inputArray = getAlphabetIndexes(encryptedMessage_);
+	keyArray = getAlphabetIndexes(keyString);
+	for (int i = 0; i < encryptedMessage_.length(); i++)
+	{
+		outputArray[i] = (inputArray[i] - keyArray[i] + alphabetSize_) % alphabetSize_;
+		realMessage += alphabet_[outputArray[i]];
+	}
 	return realMessage;
 }
 
 int main(){
-	string messageOriginal = "fl k.ccfsIolskv.~312~ .Ifrckslovelvo";
+	string messageOriginal = "o?uin uw?stutnfwat?~413~orwa? thfuisnnrsiu";
 	Cypher encrypted(messageOriginal);
-	encrypted.decryptMessage();
+	cout<<encrypted.decryptMessage();
 	system("pause");
 	return 0;
 }
